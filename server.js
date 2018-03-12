@@ -20,16 +20,13 @@ var PORT = 3000;
 // Use morgan logger for logging requests
 app.use(logger("dev"));
 // parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // parse application/json
 app.use(bodyParser.json());
 
-// app.use(methodOverride("_method"));
-
 // Set Handlebars.
 var exphbs = require("express-handlebars");
-
 app.engine("handlebars", exphbs({ defaultLayout: "main" }));
 app.set("view engine", "handlebars");
 
@@ -37,31 +34,43 @@ app.set("view engine", "handlebars");
 app.use(express.static("./public"));
 
 mongoose.Promise = Promise;
-mongoose.connect("mongodb://localhost/scrapedThatNewsdb", {
-    // useMongoClient: true
+mongoose.connect(
+    "mongodb://localhost/mongoHeadlinesdb", {
+        useMongoClient: true
+    }
+);
+
+// Routes
+
+// Route for retrieving all Notes from the db
+app.get("/notes", function(req, res) {
+    // Find all Notes
+    db.Note.find({})
+        .then(function(dbNote) {
+            // If all Notes are successfully found, send them back to the client
+            res.json(dbNote);
+        })
+        .catch(function(err) {
+            // If an error occurs, send the error back to the client
+            res.json(err);
+        });
 });
 
-app.get("/scrape", function(req, res) {
+app.get("/scraped", function(req, res) {
     request("https://www.azcentral.com/", function(error, response, html) {
         var $ = cheerio.load(html);
-        $("a").each(function(i, element) {
-            var link = $(element).attr("href");
-            var headline = $(element)
-                .children("span.js-asset-headline").text().trim().replace("\n", "");
-            if (headline && link) {
-                db.Article.create({
-                        headline: headline,
-                        link: link
-                    },
-                    function(err, inserted) {
-                        if (err) {
-                            console.log(err);
-                        } else {
-                            console.log(inserted);
-                        }
-                    }
-                );
-            }
+        $("a.js-asset-link").each(function(i, element) {
+            var result = {};
+            result.link = $(this).attr("href");
+            result.headline = $(element).children("span.js-asset-headline").text().trim().replace("\n", "");
+            //Create a new Article using the `result` object built from scraping
+            db.Article.create(result)
+                .then(function(dbArticle) {
+                    console.log(dbArticle);
+                })
+                .catch(function(err) {
+                    console.log(err.message);
+                });
         });
     });
     res.send("Scrape Complete");
