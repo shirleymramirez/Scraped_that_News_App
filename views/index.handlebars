@@ -1,7 +1,19 @@
-<nav class="navbar navbar-default">
-<div class="container">
-    <div class="jumbotron">
-        
-	</div>
+{{#each articles}}
+<div class="scrapedResults" id={{this._id}}>
+    <h2>
+        <a href="{{this.link}}">{{this.title}}</a>
+        <form action="/saved/{{this._id}}" method="POST">
+            <button type="submit" class="new" value="{{this.new}}">{{this.new}}</button>
+            {{#unless this.note}}
+                <button type="button" class="addNoteButton" value="{{this._id}}">Add A Note</button>
+            {{/unless}} 
+            {{#if this.note}}
+                <button type="button" class="addNoteButton" value="{{this._id}}">Edit Note</button>
+            {{/if}}
+        </form>
+    </h2>
 </div>
-</nav>
+{{/each}}
+
+
+
