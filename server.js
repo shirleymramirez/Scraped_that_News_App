@@ -9,8 +9,6 @@ var methodOverride = require("method-override");
 // Require request and cheerio. This makes the scraping possible
 var request = require("request");
 var cheerio = require("cheerio");
-var moment = require("moment");
-
 
 // Initialize Express
 var app = express();
@@ -22,9 +20,9 @@ var PORT = 3000;
 
 // Use morgan logger for logging requests
 app.use(logger("dev"));
-
+// Use body-parser for handling form submissions
 // parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // parse application/json
 app.use(bodyParser.json());
@@ -35,7 +33,6 @@ app.use(methodOverride("_method"));
 var exphbs = require("express-handlebars");
 app.engine("handlebars", exphbs({ defaultLayout: "main" }));
 app.set("view engine", "handlebars");
-
 
 mongoose.Promise = Promise;
 mongoose.connect(
@@ -49,7 +46,7 @@ app.use(express.static("./public"));
 
 // Routes
 app.get("/", function(req, res) {
-    db.Article.find({}, null, { sort: { created: -1 } }, function(err, data) {
+    db.Article.find({ saved: false }, null, { sort: { created: -1 } }, function(err, data) {
         if (data.length === 0) {
             res.render("placeholder", { message: "There's nothing scraped yet. Please click \"Scrape New Article\" for new news." });
         } else {
@@ -58,53 +55,53 @@ app.get("/", function(req, res) {
     });
 });
 
+// Route for getting all Saved Articles from the db
+app.get("/saved", function(req, res) {
+    db.Article.find({ saved: true }).populate("notes", "body").exec(function(err, data) {
+        if (err) {
+            console.log(err);
+        } else {
+            // res.json(dbArticle);
+            res.render("saved", { saved: data });
+        }
+    });
+});
+
+// route for scraping new articles
 app.get("/scraped", function(req, res) {
-    // var numberOfScrapedArticles;
     request("https://www.azcentral.com/", function(error, response, html) {
         var $ = cheerio.load(html);
-        var today = moment().format("YYYY-MM-DD");
-
+        var scrapedArticles = [];
         $("a.js-asset-link").each(function(i, element) {
-            // if (i < 20) {
-            // numberOfScrapedArticles = i;
-            var result = {};
+            var results = {};
             var link = $(this).attr("href");
             var title = $(this).children("span.js-asset-headline").text().trim().replace("\n", "");
 
             if (link && title) {
-                result.link = link;
-                result.title = title;
-                dateScraped = today;
-                //Create a new Article using the `result` object built from scraping
-                db.Article
-                    .create(result)
-                    .then(function(dbArticle) {
-                        console.log(dbArticle);
-                    })
-                    .catch(function(err) {
-                        console.log(err.message);
-                    });
+                results.link = "https://www.azcentral.com/" + link;
+                results.title = title;
+                scrapedArticles.push(results);
             }
-            // }
         });
-        res.send("Scraped Competed");
+        res.render("index", { articles: scrapedArticles });
     });
 });
 
-// Route for getting all Articles from the db
-app.get("/saved", function(req, res) {
-    db.Article.find({}).then(function(dbArticle) {
-            res.json(dbArticle);
-        })
-        .catch(function(err) {
-            res.json(err);
-        });
-    //Will sort the articles by most recent (-1 = descending order)
-    // .sort({ _id: -1 });
+
+// route to save an article 
+app.post("/saved/:id", function(req, res) {
+    db.Article.update({ _id: req.params.id }, { $set: { saved: true } }, function(err, data) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.redirect("/");
+        }
+    });
 });
 
+
 // Route for grabbing a specific Article by id, populate it with it's note
-app.get("/saved/:id", function(req, res) {
+app.get("/articles/:id", function(req, res) {
     db.Article.findOne({ _id: req.params.id })
         .populate("note")
         .then(function(dbArticle) {
@@ -115,27 +112,19 @@ app.get("/saved/:id", function(req, res) {
         });
 });
 
-// Route for saving/updating an Article's associated Note
-app.post("/saved/:id", function(req, res) {
-    db.Article.create(req.body)
-        .then(function(dbNote) {
-            return db.Article
-                .findOneAndUpdate({
-                    _id: req.params.id
-                }, {
-                    note: dbNote._id
-                }, {
-                    new: true
-                });
-        })
-        .then(function(dbArticle) {
-            res.json(dbArticle);
-        })
-        .catch(function(err) {
-            res.json(err);
-        });
+//delete route for articles on the saved page
+app.post("/delete/:id", function(req, res) {
+    db.Article.update({ _id: req.params.id }, { $set: { saved: false } }, function(err, doc) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.redirect("/saved");
+        }
+    });
 });
 
+// to be used for my modal from saved.handlebars #myModal 
+// for the Saved Articles link
 // Route for retrieving all Notes from the db
 app.get("/notes", function(req, res) {
     // Find all Notes
@@ -149,6 +138,44 @@ app.get("/notes", function(req, res) {
             res.json(err);
         });
 });
+
+
+app.delete("/saved/notes/:id", function(req, res) {
+    db.findByIdAndRemove(req.params.id, function(error, doc) {
+        // Log any errors
+        if (error) {
+            console.log(error);
+        } else {
+            console.log(doc);
+            dbArticle.findOneAndUpdate({
+                    _id: req.params.id
+                }, {
+                    $pull: {
+                        comment: doc._id
+                    }
+                })
+                // Execute the above query
+                .exec(function(err, doc) {
+                    // Log any errors
+                    if (err) {
+                        console.log(err);
+                    }
+                });
+        }
+    });
+});
+
+// delete route to delete a note
+app.post("/saved/delete/:id", function(req, res) {
+    db.Note.remove({ _id: req.params.id }, function(err, doc) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.redirect("/saved");
+        }
+    });
+});
+
 
 // Start the server
 app.listen(PORT, function() {

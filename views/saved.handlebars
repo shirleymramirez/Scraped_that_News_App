@@ -1,11 +1,21 @@
 {{#each saved}}
-<div class="storyBody" id={{this._id}}>
-    <h2>
-        <a href="{{this.link}}" target="_blank">{{this.title}}</a>
-        <form action="/saved/{{this._id}}" method="POST">
-            <button type="submit" class="status" value="{{this.status}}">{{this.status}}</button>
-            <button type="button" class="addNoteButton" value="{{this._id}}">Edit Note</button>
-        </form>
-    </h2>
-</div>
+    <div class="row">
+        <div class="panel panel-default">
+            <div class="panel-heading" id="panelHead">
+                <h3 class="panel-title">{{this.title}}</h3>
+            </div>
+            <div class="panel-body">
+                <a href="{{this.link}}" id="savedLink">{{this.link}}</a>
+                <form class="navbar-form navbar-right" method="POST" action="/saved/{{this._id}}?_method=PUT">
+                    <button type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal{{this._id}}" id="addNote">Article Notes</button>
+                    <button type="submit" class="btn btn-default" id="articleButton">Delete From Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+ {{/each}}
+
+ {{!-- Modal for --}}
+{{#each saved}}
+   
 {{/each}}
