@@ -3,13 +3,31 @@
         <div class="panel panel-default">
             <div class="panel-body">
                 <a href="{{this.link}}">{{this.title}}</a>
-                <form class="navbar-form navbar-right" method="POST" action="/saved/{{this.id}}?_method=PUT">
-                    <button type="submit" class="btn btn-default" id="articleButton">Save Article</button>
-                </form>
+                <input class="titleInput" value="{{this.title}}">
+                <input class="linkInput" value="{{this.link}}">
+                <button type="button" class="btn btn-default saveArticleButton">Save Article</button>
             </div>
         </div>
     </div>
 {{/each}}
+
+<div class="modal fade" id="scrapedArticleModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Scrape
+                    <span>{{articles.length}}</span> Articles&hellip;</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 

@@ -46,25 +46,27 @@ app.use(express.static("./public"));
 
 // Routes
 app.get("/", function(req, res) {
-    db.Article.find({ saved: false }, null, { sort: { created: -1 } }, function(err, data) {
-        if (data.length === 0) {
-            res.render("placeholder", { message: "There's nothing scraped yet. Please click \"Scrape New Article\" for new news." });
-        } else {
-            res.render("index", { articles: data });
-        }
-    });
+    db.Article.find({})
+        .then(function(data) {
+            if (data.length === 0) {
+                res.render("placeholder", { message: "There's nothing scraped yet. Please click \"Scrape New Article\" for new news." });
+            } else {
+                res.render("saved", { articles: data });
+            }
+        }).catch(function(err) {
+            res.send(err);
+        });
 });
+
 
 // Route for getting all Saved Articles from the db
 app.get("/saved", function(req, res) {
-    db.Article.find({ saved: true }).populate("notes", "body").exec(function(err, data) {
-        if (err) {
-            console.log(err);
-        } else {
-            // res.json(dbArticle);
-            res.render("saved", { saved: data });
-        }
-    });
+    db.Article.find({})
+        .then(function(data) {
+            res.render("saved", { articles: data });
+        }).catch(function(err) {
+            res.send(err);
+        });
 });
 
 // route for scraping new articles
@@ -87,16 +89,14 @@ app.get("/scraped", function(req, res) {
     });
 });
 
-
 // route to save an article 
-app.post("/saved/:id", function(req, res) {
-    db.Article.update({ _id: req.params.id }, { $set: { saved: true } }, function(err, data) {
-        if (err) {
-            res.send(err);
-        } else {
+app.post("/article", function(req, res) {
+    db.Article.create(req.body)
+        .then(function(data) {
             res.redirect("/");
-        }
-    });
+        }).catch(function(err) {
+            res.send(err);
+        });
 });
 
 
@@ -113,12 +113,22 @@ app.get("/articles/:id", function(req, res) {
 });
 
 //delete route for articles on the saved page
-app.post("/delete/:id", function(req, res) {
+app.delete("/article/:id", function(req, res) {
     db.Article.update({ _id: req.params.id }, { $set: { saved: false } }, function(err, doc) {
         if (err) {
             res.send(err);
         } else {
             res.redirect("/saved");
+        }
+    });
+});
+
+app.post("/note", function(req, res) {
+    db.Note.create(req.body, { $set: { saved: true } }, function(err, data) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.sendStatus(200);
         }
     });
 });
@@ -139,34 +149,8 @@ app.get("/notes", function(req, res) {
         });
 });
 
-
-app.delete("/saved/notes/:id", function(req, res) {
-    db.findByIdAndRemove(req.params.id, function(error, doc) {
-        // Log any errors
-        if (error) {
-            console.log(error);
-        } else {
-            console.log(doc);
-            dbArticle.findOneAndUpdate({
-                    _id: req.params.id
-                }, {
-                    $pull: {
-                        comment: doc._id
-                    }
-                })
-                // Execute the above query
-                .exec(function(err, doc) {
-                    // Log any errors
-                    if (err) {
-                        console.log(err);
-                    }
-                });
-        }
-    });
-});
-
 // delete route to delete a note
-app.post("/saved/delete/:id", function(req, res) {
+app.delete("/note/:id", function(req, res) {
     db.Note.remove({ _id: req.params.id }, function(err, doc) {
         if (err) {
             res.send(err);

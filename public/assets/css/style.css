@@ -15,6 +15,10 @@
     font-weight: bold;
 }
 
+input {
+    display: none !important;
+}
+
 body {
     background-color: #F2F6D0
 }
@@ -53,4 +57,8 @@ input {
 textarea {
     height: 200px;
     font-size: 18px;
+}
+
+.saveArticleButton {
+    float: right;
 }

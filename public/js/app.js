@@ -1,19 +1,21 @@
-// $(document).ready(function() {
-//     $(".scrapeButton").on("click", function(event) {
-//         // event.preventDefault();
+$(document).ready(function() {
+    $(".scrapeButton").on("click", function(event) {
+        $.ajax("/scraped")
+            .done(function(data) {
+                document.write(data);
+            });
+    });
 
-//         $.getJSON("/scraped", function(data) {
-//             for (var i = 0; i < data.length; i++) {
-//                 $(".scrapedArticles").append("<p data-id='" + data[i]._id + "'>" + data[i].title + "<br />" + data[i].link + "</p>");
-//             }
-//         });
-//     });
+    $(".saveArticleButton").on("click", function(event) {
 
-//     $(".delete-button").on("click", function(event) {
-//         e.preventDefault();
-//         var currentURL = location.href + "/" + $(this).data("comment");
-//         $.ajax({ method: "DELETE", url: currentURL });
-//         location.reload();
-//     });
-
-// });
+        $.ajax({
+            type: "POST",
+            url: "article",
+            data: {
+                title: $(".titleInput").val(),
+                link: $(".linkInput").val(),
+            },
+            dataType: 'json'
+        });
+    });
+});

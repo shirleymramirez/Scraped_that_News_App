@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="/assets/css/style.css" type="text/css">
     <title>Scrape-That-News-App</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/style.css" type="text/css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
@@ -25,28 +25,10 @@
                 </li>
             </ul>
     
-            <form action="/scraped" method="GET">
-                <button class="btn btn-danger navbar-btn scrapeButton" type="submit" data-toggle="modal" data-target=".bs-example-modal-sm2">
-                    SCRAPE NEW ARTICLE
-                </button>
-            </form>
-            {{!-- Modal for Scrape Button --}}
-            <div class="modal fade bs-example-modal-sm2">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Scrape
-                                <span></span> Articles&hellip;</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <button class="btn btn-danger navbar-btn scrapeButton" type="button">
+                SCRAPE NEW ARTICLE
+            </button>
+
         </div>
     </nav>
     
@@ -84,6 +66,6 @@
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    {{!-- <script src="/js/app.js"></script> --}}
+    <script src="/js/app.js"></script>
 </body>
 </html>
