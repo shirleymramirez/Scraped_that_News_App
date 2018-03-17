@@ -1,14 +1,18 @@
 $(document).ready(function() {
-    var deleteId;
+    var deleteArticleId;
+    var deleteNoteId;
     var articleId;
+    var hasNotes;
 
     function noteHtmlString(note) {
         var noteString;
         if (note) {
-            noteString = "<span>" + note.text + "</span>" +
+            noteString = '<div class="note' + note._id + '">' +
+                "<span>" + note.text + "</span>" +
                 '<button class="deleteNoteButton" data-id="' + note._id + '">' +
                 '<span class="glyphicon glyphicon-remove" />' +
-                "</button>";
+                "</button>" +
+                "</div>";
         }
         return noteString;
     }
@@ -17,6 +21,7 @@ $(document).ready(function() {
         articleId = $(this).attr("data-articleId");
         $(".noteContainer").empty();
         $.ajax("/articles/" + articleId).done(function(data) {
+            hasNotes = data.notes.length > 0;
             if (data.notes.length > 0) {
                 data.notes.forEach(function(noteId) {
                     $.ajax("/note/" + noteId).done(function(data) {
@@ -44,27 +49,33 @@ $(document).ready(function() {
             },
             dataType: "json"
         }).done(function(data) {
-            $(".noteContainer").append(noteHtmlString(data));
+            if (hasNotes) {
+                $(".noteContainer").append(noteHtmlString(data));
+                hasNotes = true;
+            } else {
+                $(".noteContainer").html(noteHtmlString(data));
+            }
             $(".deleteNoteButton").on("click", function(event) {
+                deleteNoteId = $(this).attr("data-id");
                 $.ajax({
                     type: "DELETE",
-                    url: "/note/" + $(this).attr("data-id"),
+                    url: "/note/" + deleteNoteId,
                     dataType: "json"
                 }).done(function(data) {
-                    $(".noteContainer").html("<span>No notes for this article yet</span>");
+                    $(".note" + deleteNoteId).remove();
                 });
             });
         });
     });
 
     $(".deleteArticleButton").on("click", function(event) {
-        deleteId = $(this).attr("data-articleId");
+        deleteArticleId = $(this).attr("data-articleId");
         $.ajax({
             type: "DELETE",
-            url: "/article/" + deleteId,
+            url: "/article/" + deleteArticleId,
             dataType: "json"
         }).done(function(data) {
-            $(".row" + deleteId).remove();
+            $(".row" + deleteArticleId).remove();
         });
     });
 });

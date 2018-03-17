@@ -95,8 +95,10 @@ app.post("/article", function(req, res) {
 app.post("/note", function(req, res) {
     db.Note.create({ text: req.body.text })
         .then(function(dbNote) {
-            db.Article.findOneAndUpdate({ _id: req.body.articleId }, { $push: { notes: dbNote._id } }, { new: true });
-            res.send(dbNote);
+            db.Article.findOneAndUpdate(req.body.articleId, { $push: { "notes": dbNote._id } }, { new: true })
+                .then(function(dbArticle) {
+                    res.send(dbArticle);
+                });
         })
         .catch(function(err) {
             res.send(err);
