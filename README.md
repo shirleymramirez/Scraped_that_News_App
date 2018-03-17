@@ -1,11 +1,14 @@
 # Scraped_that_News_App
 A web app that lets users view and leave comments on the latest news using Mongoose and Cheerio packages
 
-## A Node.js & MongoDB webapp that web-scrapes news data from www.azcentral.com and allows users to comment about what they have read. Users can also delete unwanted comments.
+A Node.js & MongoDB webapp that web-scrapes news data from www.azcentral.com and allows users to comment about what they have read. Users can also delete unwanted comments.
 
 Please check out the deployed version in Heroku https://dashboard.heroku.com/apps/evening-stream-73257!
 
-## The user first clicks the Scrape New Article! button to scrape www.azcentral.com, and it will populate with news article. Screenshot sample below:
+The user first clicks the Scrape New Article! button to scrape www.azcentral.com, and it will populate with news article. Screenshot sample below:
+
+![screen shot 2018-03-17 at 2 06 58 am](https://user-images.githubusercontent.com/31137669/37553559-e685f166-2987-11e8-972d-5bb5340516b3.png)
+
 
 ![screen shot 2018-03-17 at 1 56 32 am](https://user-images.githubusercontent.com/31137669/37553485-82533998-2986-11e8-9554-91ed5fd3999c.png)
 
