@@ -3,7 +3,7 @@ A web app that lets users view and leave comments on the latest news using Mongo
 
 A Node.js & MongoDB webapp that web-scrapes news data from www.azcentral.com and allows users to comment about what they have read. Users can also delete unwanted comments.
 
-Please check out the deployed version in Heroku https://dashboard.heroku.com/apps/evening-stream-73257!
+Please check out the deployed version in Heroku https://evening-stream-73257.herokuapp.com/!
 
 User first click the Scrape New Article! button to scrape www.azcentral.com, and it will populate with news article. Screenshot sample below:
 
