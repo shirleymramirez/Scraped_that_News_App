@@ -46,16 +46,7 @@ app.use(express.static("./public"));
 
 // Routes
 app.get("/", function(req, res) {
-    db.Article.find({})
-        .then(function(data) {
-            if (data.length === 0) {
-                res.render("placeholder", { message: "There's nothing scraped yet. Please click \"Scrape New Article\" for new news." });
-            } else {
-                res.render("saved", { articles: data });
-            }
-        }).catch(function(err) {
-            res.send(err);
-        });
+    res.sendFile(__dirname + "/main.html");
 });
 
 
@@ -85,7 +76,7 @@ app.get("/scraped", function(req, res) {
                 scrapedArticles.push(results);
             }
         });
-        res.render("index", { articles: scrapedArticles });
+        res.json({ articles: scrapedArticles });
     });
 });
 
@@ -112,25 +103,18 @@ app.get("/articles/:id", function(req, res) {
         });
 });
 
-//delete route for articles on the saved page
-app.delete("/article/:id", function(req, res) {
-    db.Article.update({ _id: req.params.id }, { $set: { saved: false } }, function(err, doc) {
-        if (err) {
-            res.send(err);
-        } else {
-            res.redirect("/saved");
-        }
-    });
-});
-
+// Route for saving a new Note to the db and associating it with a Article
 app.post("/note", function(req, res) {
-    db.Note.create(req.body, { $set: { saved: true } }, function(err, data) {
-        if (err) {
+    db.Note.create({ text: req.body.text })
+        .then(function(dbNote) {
+            return db.Article.findOneAndUpdate({ _id: req.body.articleId }, { $push: { notes: dbNote._id } }, { new: true });
+        })
+        .then(function(dbArticle) {
+            res.json(dbArticle);
+        })
+        .catch(function(err) {
             res.send(err);
-        } else {
-            res.sendStatus(200);
-        }
-    });
+        });
 });
 
 // to be used for my modal from saved.handlebars #myModal 
@@ -147,6 +131,17 @@ app.get("/notes", function(req, res) {
             // If an error occurs, send the error back to the client
             res.json(err);
         });
+});
+
+//delete route for articles on the saved page
+app.delete("/article/:id", function(req, res) {
+    db.Article.update({ _id: req.params.id }, { $set: { saved: false } }, function(err, doc) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.redirect("/saved");
+        }
+    });
 });
 
 // delete route to delete a note

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Scrape-That-News-App</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/style.css" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.min.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header"><a class="navbar-brand" href="/">Scrape-that-News-App</a></div>
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="/" id="allArticles">Home</a></li>
+                <li><a href="/saved" id="savedArticles">Saved Articles</a></li>
+            </ul>
+            <button class="btn btn-danger navbar-btn scrapeButton" type="button">SCRAPE NEW ARTICLE</button>
+        </div>
+    </nav>
+    <div class="backgroundImage">
+        <img src="/assets/img/other-media.jpg" alt="mediaImage" class="responsive-img" width="100%">
+    </div>
+
+    <div id="list">
+    </div>
+
+    <script id="scrapeArticle-template" type="text/x-handlebars-template">
+        {{#each articles}}
+        <div class="row">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <a href="{{link}}">{{title}}</a>
+                    <input class="titleInput{{@index}}" value="{{title}}">
+                    <input class="linkInput{{@index}}" value="{{link}}">
+                    <button type="button" class="btn btn-default saveArticleButton" data-index="{{@index}}">Save Article</button>
+                </div>
+            </div>
+        </div>
+        {{/each}}
+    </script>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $(".scrapeButton").on("click", function(event) {
+                $.ajax("/scraped")
+                    .done(function(data) {
+                        var template = Handlebars.compile($("#scrapeArticle-template").html());
+                        $("#list").html(template(data));
+
+                        $(".saveArticleButton").on("click", function(event) {
+                            var index = $(this).attr("data-index");
+                            $.ajax({
+                                url: "/article",
+                                type: "POST",
+                                data: {
+                                    link: $(".linkInput" + index).val(),
+                                    title: $(".titleInput" + index).val()
+                                },
+                                dataType: "json"
+                            }).done(function() {
+                                alert("Article saved to the server");
+                            })
+                        });
+                    });
+            });
+        });
+    </script>
+
+    <footer class="primary-footer group">
+        <small>&copy; Copyright 2018 Shirley Ramirez</small>
+    </footer>
+</body>
+
+</html>

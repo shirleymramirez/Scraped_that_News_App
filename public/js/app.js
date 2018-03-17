@@ -2,20 +2,9 @@ $(document).ready(function() {
     $(".scrapeButton").on("click", function(event) {
         $.ajax("/scraped")
             .done(function(data) {
-                document.write(data);
+                var template = Handlebars.compile($("#scrapeArticle-template").html());
+                $("#list").html(template(data));
             });
     });
 
-    $(".saveArticleButton").on("click", function(event) {
-
-        $.ajax({
-            type: "POST",
-            url: "article",
-            data: {
-                title: $(".titleInput").val(),
-                link: $(".linkInput").val(),
-            },
-            dataType: 'json'
-        });
-    });
 });

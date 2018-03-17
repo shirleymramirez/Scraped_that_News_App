@@ -5,10 +5,8 @@ var Schema = mongoose.Schema;
 
 // Using the Schema constructor, create a new NoteSchema object
 var NoteSchema = new Schema({
-  // `title` must be of type String
-  title: String,
-  // `body` must be of type String
-  body: String
+    // `title` must be of type String
+    text: String
 });
 
 // This creates our model from the above schema, using mongoose's model method
