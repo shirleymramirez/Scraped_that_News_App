@@ -1,16 +1,39 @@
 {{#each articles}}
-    <div class="row">
+    <div class="row{{this._id}}" >
         <div class="panel panel-default">
             <div class="panel-heading" id="panelHead">
                 <h3 class="panel-title">{{this.title}}</h3>
             </div>
             <div class="panel-body">
                 <a href="{{this.link}}" id="savedLink">{{this.link}}</a>
-                <button type="button" class="btn btn-default addNoteButton">Article Notes</button>
-                <button type="button" class="btn btn-default deleteArticleButton">Delete From Save</button>
+                <button type="button" class="btn btn-primary addNoteButton" data-articleId="{{this._id}}">Article Notes</button>
+                <button type="button" class="btn btn-default deleteArticleButton" data-articleId="{{this._id}}">Delete From Save</button>
             </div>
         </div>
     </div>
  {{/each}}
 
- {{!-- Modal for --}}
+ {{!-- Modal for Article Notes --}}
+ <div class="modal fade articleNotesModal" role="dialog">
+    <div class="modal-dialog">      
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <div class="panel panel-default">
+                    <div class="panel-header">
+                        <div class="noteContainer">
+                            <span>No notes for this article yet</span>
+                        </div>
+                    </div>
+                </div>
+                <textarea class="noteInputTextArea" placeholder="New Note"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary saveNoteButton">Save Note</button>
+            </div>
+        </div>
+    </div>
+</div>

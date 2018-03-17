@@ -34,12 +34,13 @@ var exphbs = require("express-handlebars");
 app.engine("handlebars", exphbs({ defaultLayout: "main" }));
 app.set("view engine", "handlebars");
 
+var MONGODB_URI =
+    process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
+
 mongoose.Promise = Promise;
-mongoose.connect(
-    "mongodb://localhost/mongoHeadlinesdb", {
-        // useMongoClient: true
-    }
-);
+mongoose.connect(MONGODB_URI, {
+    // useMongoClient: true
+});
 
 // Serve static content for the app from the "public" directory in the application directory.
 app.use(express.static("./public"));
@@ -48,7 +49,6 @@ app.use(express.static("./public"));
 app.get("/", function(req, res) {
     res.sendFile(__dirname + "/main.html");
 });
-
 
 // Route for getting all Saved Articles from the db
 app.get("/saved", function(req, res) {
@@ -84,38 +84,46 @@ app.get("/scraped", function(req, res) {
 app.post("/article", function(req, res) {
     db.Article.create(req.body)
         .then(function(data) {
-            res.redirect("/");
+            res.send(data);
         }).catch(function(err) {
             res.send(err);
         });
 });
 
 
-// Route for grabbing a specific Article by id, populate it with it's note
-app.get("/articles/:id", function(req, res) {
-    db.Article.findOne({ _id: req.params.id })
-        .populate("note")
-        .then(function(dbArticle) {
-            res.json(dbArticle);
-        })
-        .catch(function(err) {
-            res.json(err);
-        });
-});
-
-// Route for saving a new Note to the db and associating it with a Article
+// Route for saving a new Note to the db and associating it with an Article
 app.post("/note", function(req, res) {
     db.Note.create({ text: req.body.text })
         .then(function(dbNote) {
-            return db.Article.findOneAndUpdate({ _id: req.body.articleId }, { $push: { notes: dbNote._id } }, { new: true });
-        })
-        .then(function(dbArticle) {
-            res.json(dbArticle);
+            db.Article.findOneAndUpdate({ _id: req.body.articleId }, { $push: { notes: dbNote._id } }, { new: true });
+            res.send(dbNote);
         })
         .catch(function(err) {
             res.send(err);
         });
 });
+
+// delete route to delete a note
+app.delete("/note/:id", function(req, res) {
+    db.Note.remove({ _id: req.params.id })
+        .then(function(dbNote) {
+            res.send(dbNote);
+        }).catch(function(err) {
+            res.send(err);
+        });
+});
+
+//delete route for articles on the saved page
+app.delete("/article/:id", function(req, res) {
+    db.Article.remove({ _id: req.params.id })
+        .then(function(data) {
+            res.send(data);
+        })
+        .catch(function(err) {
+            res.send(err);
+        });
+});
+
 
 // to be used for my modal from saved.handlebars #myModal 
 // for the Saved Articles link
@@ -133,27 +141,20 @@ app.get("/notes", function(req, res) {
         });
 });
 
-//delete route for articles on the saved page
-app.delete("/article/:id", function(req, res) {
-    db.Article.update({ _id: req.params.id }, { $set: { saved: false } }, function(err, doc) {
-        if (err) {
-            res.send(err);
-        } else {
-            res.redirect("/saved");
-        }
-    });
+// Route for grabbing a specific Article by id, populate it with it's note
+app.get("/articles/:id", function(req, res) {
+    db.Article.findOne({ _id: req.params.id })
+        .populate("notes")
+        .then(function(dbArticle) {
+            res.json(dbArticle);
+        })
+        .catch(function(err) {
+            res.json(err);
+        });
 });
 
-// delete route to delete a note
-app.delete("/note/:id", function(req, res) {
-    db.Note.remove({ _id: req.params.id }, function(err, doc) {
-        if (err) {
-            res.send(err);
-        } else {
-            res.redirect("/saved");
-        }
-    });
-});
+
+
 
 
 // Start the server
